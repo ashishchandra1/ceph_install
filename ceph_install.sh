@@ -1,19 +1,23 @@
 CEPH_DIR=$1
 CEPH_DIR=${CEPH_DIR:-${CEPH_DIR:-/etc/ceph}}
 
-sudo rm -rf /var/lib/ceph
-
 # get rid of process and directories leftovers
-sudo pkill ceph-mon || true
-sudo pkill ceph-osd || true
+sudo stop ceph-mon id=$(hostname) || true
+sudo stop ceph-osd id=0
+sudo stop ceph-osd id=1
+
+sudo umount /dev/sdb
+sudo umount /dev/sdc
+sudo rm -rf /var/lib/ceph
 
 #Check for existence of Ceph package, install if not present
 PKG_OK=$(dpkg-query -W --showformat='${Status}\n' ceph|grep "install ok installed")
 if [ "" == "$PKG_OK" ]; then
     wget -q -O- 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | sudo apt-key add -
-   echo deb http://ceph.com/packages/ceph-extras/debian $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/ceph-extras.list
-   sudo apt-add-repository 'deb http://ceph.com/debian-firefly/ trusty main'
-   sudo apt-get update && sudo apt-get --yes install ceph ceph-common
+    echo deb http://ceph.com/packages/ceph-extras/debian $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/ceph-extras.list
+    sudo apt-add-repository 'deb http://ceph.com/debian-firefly/ trusty main'i
+    sudo apt-get update
+    sudo apt-get --yes install ceph ceph-common
 fi
 
 if [ -d $CEPH_DIR ]; then
@@ -73,8 +77,8 @@ else
    sudo mkdir -p /var/lib/ceph/osd/$CLUSTER_NAME-$OSD0_ID
 fi
 
-sudo mkfs -t xfs -f /dev/sda
-sudo mount /dev/sda /var/lib/ceph/osd/$CLUSTER_NAME-$OSD0_ID
+sudo mkfs -t xfs -f /dev/sdb
+sudo mount /dev/sdb /var/lib/ceph/osd/$CLUSTER_NAME-$OSD0_ID
 
 sudo  ceph-osd -i $OSD0_ID --mkfs --mkkey
 sudo ceph auth add osd.$OSD0_ID osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/$CLUSTER_NAME-$OSD0_ID/keyring
@@ -89,8 +93,8 @@ OSD1_ID=$(sudo ceph osd create)
 
 sudo mkdir -p /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID
 
-sudo mkfs -t xfs -f /dev/sdb
-sudo mount /dev/sdb /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID
+sudo mkfs -t xfs -f /dev/sdc
+sudo mount /dev/sdc /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID
 
 sudo  ceph-osd -i $OSD1_ID --mkfs --mkkey
 sudo ceph auth add osd.$OSD1_ID osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID/keyring
