@@ -95,7 +95,6 @@ sudo mount /dev/sdb /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID
 sudo  ceph-osd -i $OSD1_ID --mkfs --mkkey
 sudo ceph auth add osd.$OSD1_ID osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID/keyring
 
-sudo ceph osd crush add-bucket $(hostname) host
 sudo ceph osd crush move $(hostname) root=default
 sudo ceph osd crush add osd.$OSD1_ID 1.0 host=$(hostname)
 sudo start ceph-osd id=$OSD1_ID
