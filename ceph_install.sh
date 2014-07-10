@@ -15,7 +15,7 @@ PKG_OK=$(dpkg-query -W --showformat='${Status}\n' ceph|grep "install ok installe
 if [ "" == "$PKG_OK" ]; then
     wget -q -O- 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | sudo apt-key add -
     echo deb http://ceph.com/packages/ceph-extras/debian $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/ceph-extras.list
-    sudo apt-add-repository 'deb http://ceph.com/debian-firefly/ trusty main'
+    sudo apt-add-repository 'deb http://ceph.com/debian-firefly/ $(lsb_release -sc)  main'
     sudo apt-get update
     sudo apt-get --yes install ceph ceph-common
 fi
