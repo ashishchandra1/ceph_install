@@ -6,8 +6,7 @@ sudo stop ceph-mon id=$(hostname) || true
 sudo stop ceph-osd id=0
 sudo stop ceph-osd id=1
 
-sudo umount /dev/sdb
-sudo umount /dev/sdc
+sudo rm -rf /var/local/osd{0,1}
 sudo rm -rf /var/lib/ceph
 
 #Check for existence of Ceph package, install if not present
@@ -67,6 +66,8 @@ sudo start ceph-mon id=$(hostname)
 
 #Add OSDs
 
+sudo mkdir /var/local/osd{0,1}
+
 #ADD first OSD
 OSD0_ID=$(sudo ceph osd create)
 
@@ -77,8 +78,8 @@ else
    sudo mkdir -p /var/lib/ceph/osd/$CLUSTER_NAME-$OSD0_ID
 fi
 
-sudo mkfs -t xfs -f /dev/sdb
-sudo mount /dev/sdb /var/lib/ceph/osd/$CLUSTER_NAME-$OSD0_ID
+sudo mkfs -t xfs -f /var/local/osd0
+sudo mount /var/local/osd0 /var/lib/ceph/osd/$CLUSTER_NAME-$OSD0_ID
 
 sudo  ceph-osd -i $OSD0_ID --mkfs --mkkey
 sudo ceph auth add osd.$OSD0_ID osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/$CLUSTER_NAME-$OSD0_ID/keyring
@@ -93,8 +94,8 @@ OSD1_ID=$(sudo ceph osd create)
 
 sudo mkdir -p /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID
 
-sudo mkfs -t xfs -f /dev/sdc
-sudo mount /dev/sdc /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID
+sudo mkfs -t xfs -f /var/local/osd1
+sudo mount /var/local/osd1 /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID
 
 sudo  ceph-osd -i $OSD1_ID --mkfs --mkkey
 sudo ceph auth add osd.$OSD1_ID osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/$CLUSTER_NAME-$OSD1_ID/keyring
